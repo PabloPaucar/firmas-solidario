@@ -2,10 +2,11 @@ import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
 import re
+import base64
 
 # --- 1. CONFIGURACIÓN DE PÁGINA ---
 try:
-    logo_icon = Image.open("logofban.png")
+    logo_icon = Image.open("logofban_sf.png")
 except:
     logo_icon = "🏦"
 
@@ -15,94 +16,135 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS PARA DISEÑO CORPORATIVO Y LIMPIO ---
+# --- FUNCIÓN AUXILIAR ---
+def get_image_base64(path):
+    try:
+        with open(path, "rb") as image_file:
+            encoded = base64.b64encode(image_file.read()).decode()
+        return f"data:image/png;base64,{encoded}"
+    except:
+        return None
+
+# --- 2. CSS "PRO NAVBAR" CON FUENTE MATCH ---
 st.markdown("""
     <style>
-    /* Ocultar elementos nativos de Streamlit */
+    /* IMPORTANTE: Traemos la fuente Nunito de Google para que coincida con el logo */
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
+
+    /* Reset básico */
     header {visibility: hidden;}
     footer {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
     .stDeployButton {display:none;}
     
     html, body, [class*="st-"] {
         font-family: 'Inter', 'Segoe UI', Roboto, sans-serif !important;
     }
 
-    /* NUEVO: Centrado vertical de elementos en columnas (Logo y Texto) */
-    div[data-testid="stHorizontalBlock"] {
-        align-items: center !important;
+    /* BARRA SUPERIOR HORIZONTAL */
+    .header-full-width {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 80px;
+        background-color: #23b5d6; /* Celeste Corporativo */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 25px; /* Más espacio para elegancia */
     }
 
-    .block-container {
-        padding-top: 1.5rem !important; 
-        margin-top: -30px; 
+    .header-logo {
+        height: 42px; /* Ajuste fino */
+        width: auto;
+        filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.1));
+    }
+    
+    .header-divider {
+        height: 35px;
+        width: 2px; /* Un poco más gruesa */
+        background-color: rgba(255,255,255,0.3);
+        border-radius: 2px;
     }
 
-    .main-title-container {
-        /* padding-top eliminado porque ahora se centra automáticamente */
-        line-height: 1.0;
+    .header-text-block {
+        text-align: left;
+        color: white;
+        line-height: 1.1;
     }
 
-    .main-title-text {
-        color: #23b5d6;
-        font-size: 38px;
-        font-weight: 800;
-        font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
-        letter-spacing: -1px;
-    }
-
-    .sub-title-text {
-        color: #555;
-        font-size: 14px;
-        font-weight: 400;
-        letter-spacing: 0.5px;
+    /* AQUI ESTÁ EL CAMBIO DE FUENTE */
+    .header-title {
+        font-family: 'Nunito', sans-serif; /* Fuente redondeada */
+        font-size: 20px;
+        font-weight: 800; /* Extra bold para parecerse al logo */
         text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .header-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-size: 13px;
+        font-weight: 400;
+        opacity: 0.95;
     }
 
+    /* Ajuste del cuerpo */
+    .block-container {
+        padding-top: 120px !important; 
+    }
+
+    /* Estilos del Formulario */
     .section-header {
         color: #23b5d6;
-        font-family: 'Segoe UI Bold', sans-serif;
+        font-family: 'Nunito', sans-serif; /* También aplicamos redondez aquí */
         font-size: 15px;
         font-weight: 700;
         margin-top: 15px;
-        margin-bottom: 15px;
-        border-left: 4px solid #23b5d6;
+        margin-bottom: 5px;
+        border-left: 5px solid #23b5d6;
         padding-left: 10px;
+        text-transform: uppercase;
     }
 
-    /* Botones con estilo estándar (Normal) */
-    div.stButton > button:first-child, div.stDownloadButton > button:first-child {
-        width: 100%;
-        height: 3.5em;
+    div.stButton > button:first-child {
+        background-color: #23b5d6; color: white; border: none;
+        font-weight: bold; height: 3em; width: 100%; border-radius: 8px; margin-top: 10px;
+        font-family: 'Nunito', sans-serif; /* Botón con fuente redondeada */
+        font-size: 16px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. HEADER COMPACTO (CENTRADO) ---
-# Ajustamos ligeramente la proporción de columnas para dar más aire
-col_logo, col_titulo = st.columns([1, 5]) 
-with col_logo:
-    try:
-        # Mantenemos el tamaño grande, el CSS se encarga de centrar el texto
-        st.image("logofban.png", width=100)
-    except:
-        st.write("🏦")
+# --- 3. RENDERIZADO DEL HEADER ---
+logo_header = get_image_base64("header_banco.png")
 
-with col_titulo:
+if logo_header:
     st.markdown(f"""
-        <div class="main-title-container">
-            <span class="main-title-text">Generador de Firmas</span><br>
-            <span class="sub-title-text">Herramienta de Autogestión — Banco Solidario</span>
+        <div class="header-full-width">
+            <div class="header-content">
+                <img src="{logo_header}" class="header-logo">
+                <div class="header-divider"></div>
+                <div class="header-text-block">
+                    <div class="header-title">Generador de Firmas</div>
+                    <div class="header-subtitle">Plataforma de Autogestión</div>
+                </div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
+else:
+    st.markdown('<div class="header-full-width"><h3 style="color:white;">Banco Solidario</h3></div>', unsafe_allow_html=True)
 
-st.markdown('<div style="border-bottom: 2px solid #23b5d6; margin-bottom: 25px; margin-top: 15px;"></div>', unsafe_allow_html=True)
-
-# --- [EL RESTO DEL CÓDIGO (FUNCIONES Y FORMULARIO) SIGUE IGUAL] ---
-# ... (Pega aquí desde la sección 4 hacia abajo del código anterior)
-# --- 4. FUNCIÓN GENERADORA CORREGIDA ---
+# --- 4. FUNCIÓN GENERADORA ---
 def generar_imagen_firma(datos):
-    # CORRECCIÓN: Aumentamos el lienzo a 150 de alto para evitar la línea negra
     canvas_w, canvas_h = 600, 150 
     im = Image.new('RGB', (canvas_w, canvas_h), (255, 255, 255))
     draw = ImageDraw.Draw(im)
@@ -113,7 +155,7 @@ def generar_imagen_firma(datos):
         f_boo = ImageFont.truetype("Gotham-Book.ttf", 11)
     except: return None
 
-    x_base, x_sang = 140, 150 
+    x_base, x_sang = 135, 145
     y_curr = 15
     max_x = 0
     def med(txt, x, y, fnt, col="black"):
@@ -139,7 +181,6 @@ def generar_imagen_firma(datos):
         im.paste(logo_res, (15, 15), logo_res if logo_res.mode == 'RGBA' else None)
     except: pass
     
-    # El recorte ahora se hace sobre un lienzo seguro, garantizando fondo blanco
     return im.crop((0, 0, max_x + 20, y_curr + 20))
 
 # --- 5. FORMULARIO ---
@@ -183,10 +224,10 @@ if submit:
             "direccion": "Amazonas y Corea N36-69. Quito/ Matriz", "web": "www.banco-solidario.com"
         }
 
-        st.markdown('<div class="section-header">Resultado de la Generación</div>', unsafe_allow_html=True)
+        st.success("✅ Firma generada exitosamente")
         img = generar_imagen_firma(info)
         if img:
-            st.image(img)
+            st.image(img, caption="Vista Previa Oficial", width="content")
             buf = io.BytesIO()
             img.save(buf, format="PNG")
-            st.download_button("Descargar en Formato PNG", buf.getvalue(), f"Firma_{p_ape_f}.png", "image/png")
+            st.download_button("📥 Descargar Firma PNG", buf.getvalue(), f"Firma_{p_ape_f}.png", "image/png")
