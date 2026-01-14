@@ -195,7 +195,7 @@ with st.container():
         
         st.markdown('<div class="section-header">PUESTO Y CONTACTO</div>', unsafe_allow_html=True)
         cargo = st.text_input("Cargo", placeholder="Ej: Analista de Crédito Senior")
-        email = st.text_input("Correo Corporativo", placeholder="Ej: jperez@banco-solidario.com")
+        email = st.text_input("Correo Corporativo", placeholder="Ej: jperez@solidario.fin.ec")
         
         c3, c4 = st.columns(2)
         cel = st.text_input("Celular (Opcional)", placeholder="Ej: 0998765432")
